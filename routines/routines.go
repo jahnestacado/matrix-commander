@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image/color"
 	"matrix-commander/config"
+	"sync"
 	"time"
 
 	rgbmatrix "github.com/mcuadros/go-rpi-rgb-led-matrix"
@@ -25,38 +26,41 @@ func (r *Routine) Apply(channel chan ID) {
 var Routines []Routine
 
 func init() {
+
+	var mutex = &sync.Mutex{}
+
 	var r1 Routine
+	m, err := rgbmatrix.NewRGBLedMatrix(config.Matrix.GetConfig())
+	if err != nil {
+		panic(err)
+	}
+	c := rgbmatrix.NewCanvas(m)
+
+	bounds := c.Bounds()
 	r1 = Routine{
 		ID: ID("r1"),
 		Action: func(channel chan ID) {
 
 			start := func() {
-				m, err := rgbmatrix.NewRGBLedMatrix(config.Matrix.GetConfig())
-				if err != nil {
-					panic(err)
-				}
-				c := rgbmatrix.NewCanvas(m)
-
-				defer c.Close()
-
-				bounds := c.Bounds()
 
 				for {
 
-					for x := bounds.Min.X; x < bounds.Max.X; x++ {
-						for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+					for x := 0; x < bounds.Max.Y; x++ {
+						for y := 0; y < bounds.Max.X; y++ {
 
 							select {
 							case emittedID := <-channel:
 								fmt.Println("received", emittedID)
 								if emittedID != r1.ID {
-									c.Close()
-
 									return
 								}
 							default:
+								mutex.Lock()
+
 								c.Set(y, x, color.RGBA{25, 255, 255, 255})
 								c.Render()
+								mutex.Unlock()
+
 								time.Sleep(50 * time.Millisecond)
 							}
 						}
@@ -83,31 +87,24 @@ func init() {
 		Action: func(channel chan ID) {
 
 			start := func() {
-				m, err := rgbmatrix.NewRGBLedMatrix(config.Matrix.GetConfig())
-				if err != nil {
-					panic(err)
-				}
-				c := rgbmatrix.NewCanvas(m)
-
-				defer c.Close()
-
-				bounds := c.Bounds()
 
 				for {
 
-					for x := bounds.Min.X; x < bounds.Max.X; x++ {
-						for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+					for x := 0; x < bounds.Max.Y; x++ {
+						for y := 0; y < bounds.Max.X; y++ {
 
 							select {
 							case emittedID := <-channel:
 								fmt.Println("received", emittedID)
 								if emittedID != r2.ID {
-									c.Close()
+
 									return
 								}
 							default:
+								mutex.Lock()
 								c.Set(y, x, color.RGBA{250, 0, 0, 255})
 								c.Render()
+								mutex.Unlock()
 								time.Sleep(50 * time.Millisecond)
 							}
 						}
