@@ -3,6 +3,10 @@ package main
 import (
 	"fmt"
 	"matrix-commander/api"
+	"matrix-commander/config"
+	"matrix-commander/routine"
+
+	rgbmatrix "github.com/mcuadros/go-rpi-rgb-led-matrix"
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -14,22 +18,17 @@ var (
 )
 
 func main() {
-
 	server := echo.New()
 	server.Pre(middleware.RemoveTrailingSlash())
 
-	// server.HTTPErrorHandler = func(err error, context echo.Context) {
-	// 	httpError := err.(*echo.HTTPError)
-	// 	exposedError := errors.Unwrap(err)
-	// 	if exposedError == nil {
-	// 		exposedError = echo.NewHTTPError(httpError.Code, errors.New("error"))
-	// 	}
-	//
-	// 	server.DefaultHTTPErrorHandler(exposedError, context)
-	// }
-	fmt.Println("wtf")
+	matrixController, err := rgbmatrix.NewRGBLedMatrix(config.Matrix.GetConfig())
+	if err != nil {
+		panic(err)
+	}
 
-	api.Attach(server)
+	routines := routine.CreateRoutines(matrixController)
+
+	api.Attach(server, routines)
 	fmt.Println("listening")
 
 	server.Logger.Fatal(server.Start(fmt.Sprintf("%s:%s", host, port)))
