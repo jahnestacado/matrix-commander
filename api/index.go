@@ -7,8 +7,6 @@ import (
 	"github.com/labstack/echo"
 )
 
-var resetID = routine.ID("")
-
 func Attach(server *echo.Echo, routines []routine.Routine) {
 	channels := make([]chan routine.ID, 0)
 
@@ -21,7 +19,6 @@ func Attach(server *echo.Echo, routines []routine.Routine) {
 	server.POST("/api/pattern/:id", func(context echo.Context) error {
 		ID := routine.ID(context.Param("id"))
 		for i := range channels {
-			channels[i] <- resetID
 			channels[i] <- ID
 		}
 

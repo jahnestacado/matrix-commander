@@ -13,17 +13,17 @@ import (
 )
 
 const (
-	brightness                    = 180
+	opacity                       = 255
 	numOfSeeds                    = 290
 	gifDisplayDurationInSecs      = 30
 	golGenerationIntervalInMillis = 500
 )
 
 var (
-	redColor   = color.RGBA{255, 0, 0, brightness}
-	cyanColor  = color.RGBA{25, 255, 255, brightness}
-	greenColor = color.RGBA{0, 255, 0, brightness}
-	blackColor = color.RGBA{0, 0, 0, brightness}
+	redColor   = color.RGBA{255, 0, 0, opacity}
+	cyanColor  = color.RGBA{25, 255, 255, opacity}
+	greenColor = color.RGBA{0, 255, 0, opacity}
+	blackColor = color.RGBA{0, 0, 0, opacity}
 )
 
 func imagePlayerAction(routineID ID, channel chan ID, matrixController rgbmatrix.Matrix) {
