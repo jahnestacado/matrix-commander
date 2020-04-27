@@ -20,7 +20,7 @@ func CreateRoutines(matrixController rgbmatrix.Matrix) []Routine {
 	var routines []Routine
 	imagePlayerRoutine := Routine{
 		MatrixController: matrixController,
-		ID:               ID("image-player"),
+		ID:               ID("images"),
 		Action:           imagePlayerAction,
 	}
 	gameOfLifeRoutine := Routine{

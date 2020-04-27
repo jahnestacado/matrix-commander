@@ -29,7 +29,6 @@ func main() {
 	routines := routine.CreateRoutines(matrixController)
 
 	api.Attach(server, routines)
-	fmt.Println("listening")
 
 	server.Logger.Fatal(server.Start(fmt.Sprintf("%s:%s", host, port)))
 }

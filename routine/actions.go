@@ -12,53 +12,46 @@ import (
 	rgbmatrix "github.com/mcuadros/go-rpi-rgb-led-matrix"
 )
 
-func init() {
-	files, err := ioutil.ReadDir("./images")
-	if err != nil {
-		log.Fatal(err)
-	}
+const (
+	brightness                    = 180
+	numOfSeeds                    = 290
+	gifDisplayDurationInSecs      = 30
+	golGenerationIntervalInMillis = 500
+)
 
-	for _, f := range files {
-		fmt.Println(f.Name())
-	}
-}
+var (
+	redColor   = color.RGBA{255, 0, 0, brightness}
+	cyanColor  = color.RGBA{25, 255, 255, brightness}
+	greenColor = color.RGBA{0, 255, 0, brightness}
+	blackColor = color.RGBA{0, 0, 0, brightness}
+)
 
 func imagePlayerAction(routineID ID, channel chan ID, matrixController rgbmatrix.Matrix) {
 	start := func(toolkit *rgbmatrix.ToolKit) {
 		for {
 
-			files, err := ioutil.ReadDir("./images")
+			gifFiles, err := ioutil.ReadDir("./images")
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			for _, file := range files {
+			for _, gifFile := range gifFiles {
 
 				select {
 				case emittedID := <-channel:
-					fmt.Println("received", emittedID)
 					if emittedID != routineID {
 						toolkit.Close()
 						return
 					}
 				default:
-					gif, err := os.Open(fmt.Sprintf("./images/%s", file.Name()))
+					gif, err := os.Open(fmt.Sprintf("./images/%s", gifFile.Name()))
 					if err != nil {
 						panic(err)
 					}
 
-					// switch *rotate {
-					// case 90:
-					// 	tk.Transform = imaging.Rotate90
-					// case 180:
-					// 	tk.Transform = imaging.Rotate180
-					// case 270:
-					// 	tk.Transform = imaging.Rotate270
-					// }
-
 					close, _ := toolkit.PlayGIF(gif)
 
-					time.Sleep(time.Second * 10)
+					time.Sleep(time.Second * gifDisplayDurationInSecs)
 					close <- true
 				}
 
@@ -76,7 +69,6 @@ func imagePlayerAction(routineID ID, channel chan ID, matrixController rgbmatrix
 }
 
 func gameOfLifeAction(routineID ID, channel chan ID, matrixController rgbmatrix.Matrix) {
-	const interval = 500
 	var canvas *rgbmatrix.Canvas
 	start := func(canvas *rgbmatrix.Canvas) {
 		bounds := canvas.Bounds()
@@ -84,7 +76,7 @@ func gameOfLifeAction(routineID ID, channel chan ID, matrixController rgbmatrix.
 		config := life.Config{
 			NumOfRows:  bounds.Max.Y,
 			NumOfCols:  bounds.Max.X,
-			NumOfSeeds: 290,
+			NumOfSeeds: numOfSeeds,
 		}
 		l := life.New(config)
 
@@ -96,7 +88,6 @@ func gameOfLifeAction(routineID ID, channel chan ID, matrixController rgbmatrix.
 
 					select {
 					case emittedID := <-channel:
-						fmt.Println("received", emittedID)
 						if emittedID != routineID {
 							canvas.Close()
 							return
@@ -104,22 +95,22 @@ func gameOfLifeAction(routineID ID, channel chan ID, matrixController rgbmatrix.
 					default:
 						cell := grid[x][y]
 
-						cellColor := color.RGBA{0, 0, 0, 255}
+						cellColor := blackColor
 						if cell.Color == "green" {
-							cellColor = color.RGBA{0, 255, 0, 255}
+							cellColor = greenColor
 						}
 						if cell.Color == "cyan" {
-							cellColor = color.RGBA{25, 255, 255, 255}
+							cellColor = cyanColor
 						}
 						if cell.Color == "red" {
-							cellColor = color.RGBA{255, 0, 0, 255}
+							cellColor = redColor
 						}
 						canvas.Set(y, x, cellColor)
 					}
 				}
 			}
 			canvas.Render()
-			time.Sleep(time.Millisecond * interval)
+			time.Sleep(time.Millisecond * golGenerationIntervalInMillis)
 		}
 	}
 
