@@ -26,7 +26,7 @@ var (
 	blackColor = color.RGBA{0, 0, 0, opacity}
 )
 
-func imagePlayerAction(routineID ID, channel chan ID, matrixController rgbmatrix.Matrix) {
+func imagePlayerAction(routineID ID, channel chan ID, matrixConfig *rgbmatrix.HardwareConfig) {
 	start := func(toolkit *rgbmatrix.ToolKit) {
 		for {
 
@@ -62,13 +62,17 @@ func imagePlayerAction(routineID ID, channel chan ID, matrixController rgbmatrix
 
 	for emittedID := range channel {
 		if emittedID == routineID {
+			matrixController, err := rgbmatrix.NewRGBLedMatrix(matrixConfig)
+			if err != nil {
+				panic(err)
+			}
 			toolKit := rgbmatrix.NewToolKit(matrixController)
 			start(toolKit)
 		}
 	}
 }
 
-func gameOfLifeAction(routineID ID, channel chan ID, matrixController rgbmatrix.Matrix) {
+func gameOfLifeAction(routineID ID, channel chan ID, matrixConfig *rgbmatrix.HardwareConfig) {
 	var canvas *rgbmatrix.Canvas
 	start := func(canvas *rgbmatrix.Canvas) {
 		bounds := canvas.Bounds()
@@ -116,6 +120,10 @@ func gameOfLifeAction(routineID ID, channel chan ID, matrixController rgbmatrix.
 
 	for emittedID := range channel {
 		if emittedID == routineID {
+			matrixController, err := rgbmatrix.NewRGBLedMatrix(matrixConfig)
+			if err != nil {
+				panic(err)
+			}
 			canvas = rgbmatrix.NewCanvas(matrixController)
 			start(canvas)
 		}

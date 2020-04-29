@@ -6,8 +6,6 @@ import (
 	"matrix-commander/config"
 	"matrix-commander/routine"
 
-	rgbmatrix "github.com/mcuadros/go-rpi-rgb-led-matrix"
-
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 )
@@ -21,12 +19,8 @@ func main() {
 	server := echo.New()
 	server.Pre(middleware.RemoveTrailingSlash())
 
-	matrixController, err := rgbmatrix.NewRGBLedMatrix(config.Matrix.GetConfig())
-	if err != nil {
-		panic(err)
-	}
-
-	routines := routine.CreateRoutines(matrixController)
+	matrixConfig := config.Matrix.GetConfig()
+	routines := routine.CreateRoutines(matrixConfig)
 
 	api.Attach(server, routines)
 

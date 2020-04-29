@@ -7,26 +7,26 @@ import (
 type ID string
 
 type Routine struct {
-	MatrixController rgbmatrix.Matrix
-	ID               ID
-	Action           func(ID, chan ID, rgbmatrix.Matrix)
+	MatrixConfig *rgbmatrix.HardwareConfig
+	ID           ID
+	Action       func(ID, chan ID, *rgbmatrix.HardwareConfig)
 }
 
 func (r *Routine) Apply(channel chan ID) {
-	go r.Action(r.ID, channel, r.MatrixController)
+	go r.Action(r.ID, channel, r.MatrixConfig)
 }
 
-func CreateRoutines(matrixController rgbmatrix.Matrix) []Routine {
+func CreateRoutines(config *rgbmatrix.HardwareConfig) []Routine {
 	var routines []Routine
 	imagePlayerRoutine := Routine{
-		MatrixController: matrixController,
-		ID:               ID("images"),
-		Action:           imagePlayerAction,
+		MatrixConfig: config,
+		ID:           ID("images"),
+		Action:       imagePlayerAction,
 	}
 	gameOfLifeRoutine := Routine{
-		MatrixController: matrixController,
-		ID:               ID("gol"),
-		Action:           gameOfLifeAction,
+		MatrixConfig: config,
+		ID:           ID("gol"),
+		Action:       gameOfLifeAction,
 	}
 
 	routines = append(routines, imagePlayerRoutine)
